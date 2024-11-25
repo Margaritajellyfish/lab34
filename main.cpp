@@ -4,7 +4,7 @@
 #include <stack>
 using namespace std;
 
-const int SIZE = 7;
+const int SIZE = 11;  // Updated SIZE to include new nodes (0 to 10)
 
 struct Edge {
     int src, dest, weight;
@@ -39,48 +39,48 @@ public:
     }
 
     void DFS(int start) {
-    vector<bool> visited(SIZE, false);
-    stack<int> s;
-    int current = start;
+        vector<bool> visited(SIZE, false);
+        stack<int> s;
+        int current = start;
 
-    cout << "DFS traversal starting from vertex " << start << ": \n";
+        cout << "DFS traversal starting from vertex " << start << ":\n";
 
-    while (true) {
-        if (!visited[current]) {
-            visited[current] = true;
-            cout << current << " ";
-        }
-
-        vector<int> unvisited_neighbors;
-        for (auto &neighbor : adjList[current]) {
-            int adjVertex = neighbor.first;
-            if (!visited[adjVertex]) {
-                unvisited_neighbors.push_back(adjVertex);
-            }
-        }
-
-        if (!unvisited_neighbors.empty()) {
-            // Proceed to the last unvisited neighbor
-            int next = unvisited_neighbors.back();
-
-            // Push other unvisited neighbors onto the stack
-            for (int i = 0; i < unvisited_neighbors.size() - 1; ++i) {
-                s.push(unvisited_neighbors[i]);
+        while (true) {
+            if (!visited[current]) {
+                visited[current] = true;
+                cout << current << " ";
             }
 
-            // Move to the next node
-            current = next;
-        } else if (!s.empty()) {
-            // No unvisited neighbors, pop from stack
-            current = s.top();
-            s.pop();
-        } else {
-            // Stack is empty, traversal is complete
-            break;
+            vector<int> unvisited_neighbors;
+            for (auto &neighbor : adjList[current]) {
+                int adjVertex = neighbor.first;
+                if (!visited[adjVertex]) {
+                    unvisited_neighbors.push_back(adjVertex);
+                }
+            }
+
+            if (!unvisited_neighbors.empty()) {
+                // Proceed to the last unvisited neighbor
+                int next = unvisited_neighbors.back();
+
+                // Push other unvisited neighbors onto the stack
+                for (int i = 0; i < unvisited_neighbors.size() - 1; ++i) {
+                    s.push(unvisited_neighbors[i]);
+                }
+
+                // Move to the next node
+                current = next;
+            } else if (!s.empty()) {
+                // No unvisited neighbors, pop from stack
+                current = s.top();
+                s.pop();
+            } else {
+                // Stack is empty, traversal is complete
+                break;
+            }
         }
+        cout << endl;
     }
-    cout << endl;
-}
 
     void BFS(int start) {
         vector<bool> visited(SIZE, false);
@@ -89,7 +89,7 @@ public:
         visited[start] = true;
         q.push(start);
 
-        cout << "BFS traversal starting from vertex " << start << ": \n";
+        cout << "BFS traversal starting from vertex " << start << ":\n";
 
         while (!q.empty()) {
             int vertex = q.front();
@@ -110,9 +110,17 @@ public:
 
 int main() {
     vector<Edge> edges = {
-        {0, 1, 12}, {0, 2, 8}, {0, 3, 21},
-        {2, 3, 6}, {2, 6, 2}, {5, 6, 6},
-        {4, 5, 9}, {2, 4, 4}, {2, 5, 5}
+       
+        {0, 1, 4}, {0, 2, 29},
+        {1, 2, 1}, {1, 3, 8}, {1, 4, 3},
+        {2, 3, 8}, {2, 4, 19},
+
+        // Adding new nodes and edges
+        {2, 5, 11}, {2, 6, 8},
+        {3, 7, 9}, {4, 8, 10},
+        {5, 6, 5}, {5, 7, 4}, {6, 8, 6},
+        {7, 8, 3}, {5, 9, 15}, {6, 10, 7},
+        {9, 10, 9}
     };
 
     Graph graph(edges);   
