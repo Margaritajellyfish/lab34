@@ -2,22 +2,35 @@
 #include <vector>
 #include <queue>
 #include <stack>
+#include <unordered_map>
 using namespace std;
 
-const int SIZE = 11;  // Updated SIZE to include new nodes (0 to 10)
+const int SIZE = 11;  // Total number of users (nodes)
 
 struct Edge {
     int src, dest, weight;
 };
 
+struct User {
+    int id;
+    string name;
+};
+
 typedef pair<int, int> Pair;  
-class Graph {
+class SocialNetwork {
 public:
     vector<vector<Pair> > adjList;
+    unordered_map<int, User> users;
 
-    Graph(vector<Edge> const &edges) {   
+    SocialNetwork(vector<Edge> const &edges, vector<User> const &userList) {   
         adjList.resize(SIZE);
 
+        // Initialize users
+        for (const auto& user : userList) {
+            users[user.id] = user;
+        }
+
+        // Build the adjacency list
         for (auto &edge : edges) {
             int src = edge.src;
             int dest = edge.dest;
@@ -28,12 +41,14 @@ public:
         }
     }
 
-    void printGraph() {
-        cout << "Graph's adjacency list:\n";
+    void printNetwork() {
+        cout << "Social Media Network Connections:\n";
+        cout << "=================================\n";
         for (int i = 0; i < adjList.size(); i++) {
-            cout << i << " --> ";
-            for (Pair v : adjList[i])
-                cout << "(" << v.first << ", " << v.second << ") ";
+            cout << users[i].name << " connects with:\n";
+            for (Pair v : adjList[i]) {
+                cout << "  → " << users[v.first].name << " (Interaction Strength: " << v.second << ")\n";
+            }
             cout << endl;
         }
     }
@@ -43,12 +58,13 @@ public:
         stack<int> s;
         int current = start;
 
-        cout << "DFS traversal starting from vertex " << start << ":\n";
+        cout << "Friendship Exploration (DFS) starting from " << users[start].name << ":\n";
+        cout << "=========================================================\n";
 
         while (true) {
             if (!visited[current]) {
                 visited[current] = true;
-                cout << current << " ";
+                cout << "Visiting " << users[current].name << "\n";
             }
 
             vector<int> unvisited_neighbors;
@@ -89,12 +105,13 @@ public:
         visited[start] = true;
         q.push(start);
 
-        cout << "BFS traversal starting from vertex " << start << ":\n";
+        cout << "Layer-by-Layer Connection Inspection (BFS) from " << users[start].name << ":\n";
+        cout << "============================================================\n";
 
         while (!q.empty()) {
             int vertex = q.front();
             q.pop();    
-            cout << vertex << " ";
+            cout << "Checking connections of " << users[vertex].name << "\n";
 
             for (auto &neighbor : adjList[vertex]) {
                 int adjVertex = neighbor.first;
@@ -110,12 +127,15 @@ public:
 
 int main() {
     vector<Edge> edges = {
-       
-        {0, 1, 4}, {0, 2, 29},
-        {1, 2, 1}, {1, 3, 8}, {1, 4, 3},
-        {2, 3, 8}, {2, 4, 19},
+        // Original users: 0 to 6
+        // Deleted users 5 and 6 (nodes 5 and 6 are not included)
+        // Remaining users: 0 to 4
+        // Added six new users: 5 to 10 (total users now 11: 0 to 10)
 
-        // Adding new nodes and edges
+        // Friendships between users
+        {0, 1, 8}, {0, 2, 21},
+        {1, 2, 6}, {1, 3, 5}, {1, 4, 4},
+        {2, 3, 7}, {2, 4, 12},
         {2, 5, 11}, {2, 6, 8},
         {3, 7, 9}, {4, 8, 10},
         {5, 6, 5}, {5, 7, 4}, {6, 8, 6},
@@ -123,10 +143,16 @@ int main() {
         {9, 10, 9}
     };
 
-    Graph graph(edges);   
-    graph.printGraph();
-    graph.DFS(0);
-    graph.BFS(0);
+    // User information
+    vector<User> userList = {
+        {0, "Alice"}, {1, "Bob"}, {2, "Charlie"}, {3, "Diana"}, {4, "Eve"},
+        {5, "Frank"}, {6, "Grace"}, {7, "Hannah"}, {8, "Ivan"}, {9, "Judy"}, {10, "Kevin"}
+    };
+
+    SocialNetwork network(edges, userList);   
+    network.printNetwork();
+    network.DFS(0);
+    network.BFS(0);
 
     return 0;
 }
