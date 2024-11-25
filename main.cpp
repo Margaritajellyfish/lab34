@@ -54,7 +54,7 @@ public:
     }
 
     void printNetwork() {
-        cout << "Social Media Network Connections:\n";
+        cout << "\nSocial Media Network Connections:\n";
         cout << "=================================\n";
         for (int i = 0; i < adjList.size(); i++) {
             cout << users[i].name << " connects with:\n";
@@ -70,7 +70,7 @@ public:
         stack<int> s;
         int current = start;
 
-        cout << "Friendship Exploration (DFS) starting from " << users[start].name << ":\n";
+        cout << "\nFriendship Exploration (DFS) starting from " << users[start].name << ":\n";
         cout << "=========================================================\n";
 
         while (true) {
@@ -117,7 +117,7 @@ public:
         visited[start] = true;
         q.push(start);
 
-        cout << "Layer-by-Layer Connection Inspection (BFS) from " << users[start].name << ":\n";
+        cout << "\nLayer-by-Layer Connection Inspection (BFS) from " << users[start].name << ":\n";
         cout << "============================================================\n";
 
         while (!q.empty()) {
@@ -161,7 +161,7 @@ public:
         }
 
         // Output the shortest paths
-        cout << "Shortest friendship distances from " << users[start].name << ":\n";
+        cout << "\nShortest friendship distances from " << users[start].name << ":\n";
         for (int i = 0; i < SIZE; i++) {
             cout << users[start].name << " -> " << users[i].name << " : ";
             if (dist[i] == INT_MAX) {
@@ -170,6 +170,7 @@ public:
                 cout << dist[i] << endl;
             }
         }
+        cout << endl;
     }
 
     // Disjoint Set Union (DSU) data structure for Kruskal's algorithm
@@ -226,12 +227,14 @@ public:
         }
 
         // Output the MST
-        cout << "Minimum Spanning Tree edges:\n";
+        cout << "\nStrongest Friendship Paths (Minimum Spanning Tree):\n";
+        cout << "====================================================\n";
         for (Edge &edge : mst) {
             cout << "Edge from " << users[edge.src].name << " to " << users[edge.dest].name
                  << " with friendship distance: " << edge.weight << endl;
         }
         cout << "Total friendship distance: " << totalWeight << endl;
+        cout << endl;
     }
 };
 
@@ -255,11 +258,43 @@ int main() {
     };
 
     SocialNetwork network(edges, userList);
-    network.printNetwork();
-    network.DFS(0);
-    network.BFS(0);
-    network.shortestPath(0); // Compute shortest paths from Alice
-    network.minimumSpanningTree(); // Compute MST
+
+    int choice;
+    do {
+        cout << "Social Media Network Menu:\n";
+        cout << "[1] Display social network connections\n";
+        cout << "[2] Friendship exploration (DFS)\n";
+        cout << "[3] Connection inspection (BFS)\n";
+        cout << "[4] Calculate shortest friendship distances\n";
+        cout << "[5] Find strongest friendship paths (MST)\n";
+        cout << "[0] Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                network.printNetwork();
+                break;
+            case 2:
+                network.DFS(0); // Starting from Alice (ID 0)
+                break;
+            case 3:
+                network.BFS(0); // Starting from Alice (ID 0)
+                break;
+            case 4:
+                network.shortestPath(0); // Starting from Alice (ID 0)
+                break;
+            case 5:
+                network.minimumSpanningTree();
+                break;
+            case 0:
+                cout << "Exiting program.\n";
+                break;
+            default:
+                cout << "Invalid choice. Please enter a number between 0 and 5.\n";
+        }
+        cout << endl;
+    } while (choice != 0);
 
     return 0;
 }
