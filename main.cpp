@@ -3,6 +3,7 @@
 #include <queue>
 #include <stack>
 #include <unordered_map>
+#include <algorithm>
 using namespace std;
 
 const int SIZE = 11;  // Total number of users (nodes)
@@ -20,12 +21,14 @@ struct User {
 };
 
 typedef pair<int, int> Pair;
+
 class SocialNetwork {
 public:
     vector<vector<Pair>> adjList;
     unordered_map<int, User> users;
+    vector<Edge> edges;  // Store edges for MST
 
-    SocialNetwork(vector<Edge> const &edges, vector<User> const &userList) {
+    SocialNetwork(vector<Edge> const &edgesList, vector<User> const &userList) {
         adjList.resize(SIZE);
 
         // Initialize users
@@ -34,12 +37,16 @@ public:
         }
 
         // Build the adjacency list with inverted weights (friendship distances)
-        for (auto &edge : edges) {
+        for (auto &edge : edgesList) {
             int src = edge.src;
             int dest = edge.dest;
 
             // Invert the weight to represent distance
             int distance = MAX_INTERACTION_STRENGTH - edge.weight + 1;
+
+            // Store the edge with the friendship distance
+            Edge newEdge = {src, dest, distance};
+            edges.push_back(newEdge);
 
             adjList[src].push_back(make_pair(dest, distance));
             adjList[dest].push_back(make_pair(src, distance));
@@ -164,6 +171,68 @@ public:
             }
         }
     }
+
+    // Disjoint Set Union (DSU) data structure for Kruskal's algorithm
+    struct DSU {
+        vector<int> parent, rank;
+
+        DSU(int n) {
+            parent.resize(n);
+            rank.resize(n, 0);
+            for (int i = 0; i < n; i++)
+                parent[i] = i;
+        }
+
+        int find(int x) {
+            if (parent[x] != x)
+                parent[x] = find(parent[x]);
+            return parent[x];
+        }
+
+        bool unite(int x, int y) {
+            int xroot = find(x);
+            int yroot = find(y);
+            if (xroot == yroot)
+                return false;
+            if (rank[xroot] < rank[yroot])
+                parent[xroot] = yroot;
+            else if (rank[xroot] > rank[yroot])
+                parent[yroot] = xroot;
+            else {
+                parent[yroot] = xroot;
+                rank[xroot]++;
+            }
+            return true;
+        }
+    };
+
+    void minimumSpanningTree() {
+        // Kruskal's algorithm
+        vector<Edge> mst;
+        int totalWeight = 0;
+
+        // Sort edges by weight
+        sort(edges.begin(), edges.end(), [](Edge a, Edge b) {
+            return a.weight < b.weight;
+        });
+
+        DSU dsu(SIZE);
+
+        for (Edge &edge : edges) {
+            if (dsu.unite(edge.src, edge.dest)) {
+                mst.push_back(edge);
+                totalWeight += edge.weight;
+            }
+        }
+
+        // Output the MST
+        cout << "Minimum Spanning Tree edges:\n";
+        for (Edge &edge : mst) {
+            cout << "Edge from " << users[edge.src].name << " to " << users[edge.dest].name
+                 << " with friendship distance: " << edge.weight << endl;
+        }
+        cout << "Total friendship distance: " << totalWeight << endl;
+    }
 };
 
 int main() {
@@ -190,6 +259,7 @@ int main() {
     network.DFS(0);
     network.BFS(0);
     network.shortestPath(0); // Compute shortest paths from Alice
+    network.minimumSpanningTree(); // Compute MST
 
     return 0;
 }
