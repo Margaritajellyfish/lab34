@@ -7,6 +7,9 @@ using namespace std;
 
 const int SIZE = 11;  // Total number of users (nodes)
 
+// Maximum interaction strength to invert the weights
+const int MAX_INTERACTION_STRENGTH = 21; // Adjusted based on the highest interaction strength in edges
+
 struct Edge {
     int src, dest, weight;
 };
@@ -16,28 +19,30 @@ struct User {
     string name;
 };
 
-typedef pair<int, int> Pair;  
+typedef pair<int, int> Pair;
 class SocialNetwork {
 public:
-    vector<vector<Pair> > adjList;
+    vector<vector<Pair>> adjList;
     unordered_map<int, User> users;
 
-    SocialNetwork(vector<Edge> const &edges, vector<User> const &userList) {   
+    SocialNetwork(vector<Edge> const &edges, vector<User> const &userList) {
         adjList.resize(SIZE);
 
         // Initialize users
-        for (const auto& user : userList) {
+        for (const auto &user : userList) {
             users[user.id] = user;
         }
 
-        // Build the adjacency list
+        // Build the adjacency list with inverted weights (friendship distances)
         for (auto &edge : edges) {
             int src = edge.src;
             int dest = edge.dest;
-            int weight = edge.weight;
 
-            adjList[src].push_back(make_pair(dest, weight));
-            adjList[dest].push_back(make_pair(src, weight));
+            // Invert the weight to represent distance
+            int distance = MAX_INTERACTION_STRENGTH - edge.weight + 1;
+
+            adjList[src].push_back(make_pair(dest, distance));
+            adjList[dest].push_back(make_pair(src, distance));
         }
     }
 
@@ -47,7 +52,7 @@ public:
         for (int i = 0; i < adjList.size(); i++) {
             cout << users[i].name << " connects with:\n";
             for (Pair v : adjList[i]) {
-                cout << "  → " << users[v.first].name << " (Interaction Strength: " << v.second << ")\n";
+                cout << "  → " << users[v.first].name << " (Friendship Distance: " << v.second << ")\n";
             }
             cout << endl;
         }
@@ -110,7 +115,7 @@ public:
 
         while (!q.empty()) {
             int vertex = q.front();
-            q.pop();    
+            q.pop();
             cout << "Checking connections of " << users[vertex].name << "\n";
 
             for (auto &neighbor : adjList[vertex]) {
@@ -123,16 +128,47 @@ public:
         }
         cout << endl;
     }
+
+    void shortestPath(int start) {
+        // Dijkstra's algorithm
+        vector<int> dist(SIZE, INT_MAX);
+        dist[start] = 0;
+
+        // Min-heap to store (distance, vertex)
+        priority_queue<Pair, vector<Pair>, greater<Pair>> pq;
+        pq.push(make_pair(0, start));
+
+        while (!pq.empty()) {
+            int u = pq.top().second;
+            pq.pop();
+
+            for (auto &neighbor : adjList[u]) {
+                int v = neighbor.first;
+                int weight = neighbor.second;
+
+                if (dist[u] + weight < dist[v]) {
+                    dist[v] = dist[u] + weight;
+                    pq.push(make_pair(dist[v], v));
+                }
+            }
+        }
+
+        // Output the shortest paths
+        cout << "Shortest friendship distances from " << users[start].name << ":\n";
+        for (int i = 0; i < SIZE; i++) {
+            cout << users[start].name << " -> " << users[i].name << " : ";
+            if (dist[i] == INT_MAX) {
+                cout << "No connection\n";
+            } else {
+                cout << dist[i] << endl;
+            }
+        }
+    }
 };
 
 int main() {
     vector<Edge> edges = {
-        // Original users: 0 to 6
-        // Deleted users 5 and 6 (nodes 5 and 6 are not included)
-        // Remaining users: 0 to 4
-        // Added six new users: 5 to 10 (total users now 11: 0 to 10)
-
-        // Friendships between users
+        // Friendships between users with interaction strengths
         {0, 1, 8}, {0, 2, 21},
         {1, 2, 6}, {1, 3, 5}, {1, 4, 4},
         {2, 3, 7}, {2, 4, 12},
@@ -149,10 +185,11 @@ int main() {
         {5, "Frank"}, {6, "Grace"}, {7, "Hannah"}, {8, "Ivan"}, {9, "Judy"}, {10, "Kevin"}
     };
 
-    SocialNetwork network(edges, userList);   
+    SocialNetwork network(edges, userList);
     network.printNetwork();
     network.DFS(0);
     network.BFS(0);
+    network.shortestPath(0); // Compute shortest paths from Alice
 
     return 0;
 }
